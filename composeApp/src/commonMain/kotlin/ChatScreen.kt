@@ -1,5 +1,3 @@
-package ru.hey_savvy.sigm_app
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +25,7 @@ import androidx.compose.runtime.setValue
 import ru.hey_savvy.sigm_app.model.Message
 
 @Composable
-fun ChatScreen(viewModel: ChatViewModel = viewModel()) {
+fun ChatScreen(username: String, viewModel: ChatViewModel = viewModel()) {
 
     val messages by viewModel.messages.collectAsState()
     var inputText by remember { mutableStateOf("") }
@@ -49,7 +47,7 @@ fun ChatScreen(viewModel: ChatViewModel = viewModel()) {
                 )
                 Button(
                     onClick = {
-                        viewModel.sendMessage(inputText)
+                        viewModel.sendMessage(inputText,username)
                         inputText = ""
                     }
                 ) {

@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Message(
-    val id: Long,
+    val id: Long = 0L,
     val text: String,
     val author: String,
-    val timestamp: LocalDateTime
+    val timestamp: LocalDateTime? = null
 )

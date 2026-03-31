@@ -7,10 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.hey_savvy.sigm_app.model.Message
 import ru.hey_savvy.sigm_app.repository.ChatRepository
-import kotlin.time.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Instant
 
 
 class ChatViewModel : ViewModel() {
@@ -33,22 +29,15 @@ class ChatViewModel : ViewModel() {
 
     private fun observeIncoming() {
         viewModelScope.launch {
-            repository.connect().collect { text ->
-                val now = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
-                val newMessage = Message(
-                    id = now.toEpochMilliseconds(),
-                    text = text,
-                    author = "unknown",
-                    timestamp = now.toLocalDateTime(TimeZone.currentSystemDefault())
-                )
-                _messages.value += newMessage
+            repository.connect().collect { message ->
+                _messages.value += message
             }
         }
     }
 
-     fun sendMessage(text: String) {
+     fun sendMessage(text: String, author: String) {
          viewModelScope.launch {
-             repository.send(text)
+             repository.send(author, text)
          }
 
     }
