@@ -9,7 +9,7 @@ import ru.hey_savvy.sigm_app.model.Message
 import ru.hey_savvy.sigm_app.repository.ChatRepository
 
 
-class ChatViewModel : ViewModel() {
+class ChatViewModel(private val roomId: Long) : ViewModel() {
 
     private val repository = ChatRepository()
 
@@ -23,13 +23,13 @@ class ChatViewModel : ViewModel() {
 
     private fun loadMessages() {
         viewModelScope.launch {
-            _messages.value = repository.getMessages()
+            _messages.value = repository.getMessages(roomId)
         }
     }
 
     private fun observeIncoming() {
         viewModelScope.launch {
-            repository.connect().collect { message ->
+            repository.connect(roomId).collect { message ->
                 _messages.value += message
             }
         }

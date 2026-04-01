@@ -1,12 +1,11 @@
 package ru.hey_savvy.sigm_app.model
 
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Message(
-    val id: Long = 0L,
+    val id: String = "",
     val text: String,
     val author: String,
-    val timestamp: LocalDateTime? = null
+    val timestamp: String? = null
 )
