@@ -9,8 +9,7 @@ import ru.hey_savvy.sigm_app.model.Room
 import ru.hey_savvy.sigm_app.model.RoomType
 import ru.hey_savvy.sigm_app.repository.ChatRepository
 
-class RoomsViewModel : ViewModel() {
-    private val repository = ChatRepository()
+class RoomsViewModel(private val repository: ChatRepository) : ViewModel() {
 
     private val _rooms = MutableStateFlow<List<Room>>(emptyList())
     val rooms: StateFlow<List<Room>> = _rooms

@@ -9,9 +9,10 @@ import ru.hey_savvy.sigm_app.model.Message
 import ru.hey_savvy.sigm_app.repository.ChatRepository
 
 
-class ChatViewModel(private val roomId: Long) : ViewModel() {
-
-    private val repository = ChatRepository()
+class ChatViewModel(
+    private val roomId: String,
+    private val repository: ChatRepository
+) : ViewModel() {
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages
