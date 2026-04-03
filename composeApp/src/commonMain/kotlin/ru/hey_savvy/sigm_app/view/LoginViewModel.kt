@@ -5,10 +5,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.hey_savvy.sigm_app.repository.ChatRepository
+import ru.hey_savvy.sigm_app.repository.AuthRepository
 
-class LoginViewModel : ViewModel() {
-    private val repository = ChatRepository()
+class LoginViewModel(private val repository: AuthRepository) : ViewModel() {
 
     private val _token = MutableStateFlow<String?>(null)
     val token: StateFlow<String?> = _token
@@ -38,5 +37,13 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    fun getRepository() = repository
+    fun logout() {
+        repository.logout()
+        reset()
+    }
+
+    fun reset() {
+        _token.value = null
+        _error.value = null
+    }
 }

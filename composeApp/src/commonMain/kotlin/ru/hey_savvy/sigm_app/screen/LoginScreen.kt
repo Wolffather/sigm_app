@@ -1,3 +1,5 @@
+package ru.hey_savvy.sigm_app.screen
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -16,11 +18,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ru.hey_savvy.sigm_app.repository.ChatRepository
+import ru.hey_savvy.sigm_app.repository.AuthRepository
 import ru.hey_savvy.sigm_app.view.LoginViewModel
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, onLogin: (String, ChatRepository) -> Unit) {
+fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
 
     val token by viewModel.token.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -29,7 +31,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String, ChatRepository) -> 
     var isRegistering by remember { mutableStateOf(false) }
 
     LaunchedEffect(token) {
-        if (token != null) onLogin(username, viewModel.getRepository())
+        if (token != null) onLogin(username)
     }
 
     Column(

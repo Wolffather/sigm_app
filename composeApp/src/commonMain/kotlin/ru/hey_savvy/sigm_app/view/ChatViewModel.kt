@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.hey_savvy.sigm_app.model.Message
-import ru.hey_savvy.sigm_app.repository.ChatRepository
+import ru.hey_savvy.sigm_app.repository.MessageRepository
 
 
 class ChatViewModel(
     private val roomId: String,
-    private val repository: ChatRepository
+    private val repository: MessageRepository
 ) : ViewModel() {
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
