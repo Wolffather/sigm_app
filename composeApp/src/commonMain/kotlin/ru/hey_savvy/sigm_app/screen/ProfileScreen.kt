@@ -1,8 +1,10 @@
 package ru.hey_savvy.sigm_app.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,8 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,14 +42,21 @@ import ru.hey_savvy.sigm_app.view.ProfileViewModel
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val profile by viewModel.profile.collectAsState()
     var editingStatus by remember { mutableStateOf(false) }
+    var editingFirstName by remember { mutableStateOf(false) }
+    var editingLastName by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf("") }
+    var firstNameText by remember { mutableStateOf("") }
+    var lastNameText by remember { mutableStateOf("") }
 
     LaunchedEffect(profile) {
         statusText = profile?.status ?: ""
+        firstNameText = profile?.firstName ?: ""
+        lastNameText = profile?.lastName ?: ""
     }
 
     Scaffold(
@@ -52,9 +64,7 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text("Профиль") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←")
-                    }
+                    IconButton(onClick = onBack) { Text("←") }
                 }
             )
         }
@@ -68,7 +78,6 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // аватар — пока просто круг с первой буквой
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -85,39 +94,81 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = profile?.username ?: "",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+            Text(text = profile?.username ?: "", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ProfileField(
+                label = "Имя",
+                value = firstNameText,
+                isEditing = editingFirstName,
+                onValueChange = { firstNameText = it },
+                onEdit = { editingFirstName = true },
+                onSave = { viewModel.updateFirstName(firstNameText); editingFirstName = false }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            ProfileField(
+                label = "Фамилия",
+                value = lastNameText,
+                isEditing = editingLastName,
+                onValueChange = { lastNameText = it },
+                onEdit = { editingLastName = true },
+                onSave = { viewModel.updateLastName(lastNameText); editingLastName = false }
+            )
 
-            if (editingStatus) {
-                TextField(
-                    value = statusText,
-                    onValueChange = { statusText = it },
-                    placeholder = { Text("Статус") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    viewModel.updateStatus(statusText)
-                    editingStatus = false
-                }) {
-                    Text("Сохранить")
-                }
-            } else {
-                Text(
-                    text = if (profile?.status.isNullOrBlank()) "Нет статуса" else profile?.status ?: "",
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TextButton(onClick = { editingStatus = true }) {
-                    Text("Изменить статус", color = Color(0xFF7F77DD))
-                }
+            ProfileField(
+                label = "Статус",
+                value = statusText,
+                isEditing = editingStatus,
+                onValueChange = { statusText = it },
+                onEdit = { editingStatus = true },
+                onSave = { viewModel.updateStatus(statusText); editingStatus = false }
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = onLogout,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("Выйти из аккаунта", color = Color.White)
             }
         }
+    }
+}
+
+@Composable
+fun ProfileField(
+    label: String,
+    value: String,
+    isEditing: Boolean,
+    onValueChange: (String) -> Unit,
+    onEdit: () -> Unit,
+    onSave: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        if (isEditing) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                TextButton(onClick = onSave) { Text("Сохранить") }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = value.ifBlank { "Не указано" })
+                TextButton(onClick = onEdit) { Text("Изменить", color = Color(0xFF7F77DD)) }
+            }
+        }
+        HorizontalDivider()
     }
 }

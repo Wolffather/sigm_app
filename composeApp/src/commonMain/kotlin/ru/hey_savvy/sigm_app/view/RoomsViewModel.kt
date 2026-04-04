@@ -49,6 +49,7 @@ class RoomsViewModel(private val repository: RoomRepository) : ViewModel() {
     fun startPrivateChat(username: String, onSuccess: (Room) -> Unit) {
         viewModelScope.launch {
             val room = repository.startPrivateChat(username)
+            loadRooms()
             onSuccess(room)
         }
     }

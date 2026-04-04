@@ -6,6 +6,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import ru.hey_savvy.sigm_app.Config
+import ru.hey_savvy.sigm_app.TokenStorage
 import ru.hey_savvy.sigm_app.model.AuthResponse
 import ru.hey_savvy.sigm_app.model.User
 
@@ -18,7 +19,14 @@ class AuthRepository {
             setBody(User(username, password))
         }.body<AuthResponse>()
         ApiClient.token = response.token
+        TokenStorage.saveToken(response.token)
+        TokenStorage.saveUsername(username)
         return response.token
+    }
+
+    fun logout() {
+        ApiClient.token = null
+        TokenStorage.clear()
     }
 
     suspend fun register(username: String, password: String) {
@@ -28,7 +36,4 @@ class AuthRepository {
         }
     }
 
-    fun logout() {
-        ApiClient.token = null
-    }
 }

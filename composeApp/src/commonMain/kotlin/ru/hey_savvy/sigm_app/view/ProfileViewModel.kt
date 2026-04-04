@@ -28,4 +28,18 @@ class ProfileViewModel(private val repository: UserRepository) : ViewModel() {
             loadProfile()
         }
     }
+
+    fun updateFirstName(firstName: String) {
+        viewModelScope.launch {
+            repository.updateProfile(firstName = firstName)
+            loadProfile()
+        }
+    }
+
+    fun updateLastName(lastName: String) {
+        viewModelScope.launch {
+            repository.updateProfile(lastName = lastName)
+            loadProfile()
+        }
+    }
 }

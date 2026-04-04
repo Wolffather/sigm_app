@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import ru.hey_savvy.sigm_app.model.Room
+import ru.hey_savvy.sigm_app.repository.ApiClient
 import ru.hey_savvy.sigm_app.repository.AuthRepository
 import ru.hey_savvy.sigm_app.repository.MessageRepository
 import ru.hey_savvy.sigm_app.repository.RoomRepository
@@ -29,18 +30,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        setContent {
-            var currentUser by remember { mutableStateOf<String?>(null) }
-            var currentRoom by remember { mutableStateOf<Room?>(null) }
+        TokenStorage.getToken()?.let {
+            ApiClient.token = it
+        }
 
+        setContent {
             val authRepository = remember { AuthRepository() }
             val roomRepository = remember { RoomRepository() }
             val messageRepository = remember { MessageRepository() }
             val userRepository = remember { UserRepository() }
-
             var showProfile by remember { mutableStateOf(false) }
-
             val loginViewModel = remember { LoginViewModel(authRepository) }
+            var currentUser by remember {
+                mutableStateOf(TokenStorage.getUsername())
+            }
+            var currentRoom by remember { mutableStateOf<Room?>(null) }
 
             if (currentUser == null) {
                 LoginScreen(
@@ -51,19 +55,20 @@ class MainActivity : ComponentActivity() {
                 val profileViewModel = remember { ProfileViewModel(userRepository) }
                 ProfileScreen(
                     viewModel = profileViewModel,
-                    onBack = { showProfile = false }
+                    onBack = { showProfile = false },
+                    onLogout = {
+                        loginViewModel.logout()
+                        currentUser = null
+                        currentRoom = null
+                    },
                 )
             } else if (currentRoom == null) {
                 val roomsViewModel = remember { RoomsViewModel(roomRepository) }
                 RoomsScreen(
                     viewModel = roomsViewModel,
                     onRoomClick = { currentRoom = it },
-                    onLogout = {
-                        loginViewModel.logout()
-                        currentUser = null
-                        currentRoom = null
-                    },
-                    onProfileClick = { showProfile = true }
+                    onProfileClick = { showProfile = true },
+                    currentUsername = currentUser!!
                 )
             } else {
                 val chatViewModel = remember(currentRoom) { ChatViewModel(currentRoom!!.id.toString(), messageRepository) }

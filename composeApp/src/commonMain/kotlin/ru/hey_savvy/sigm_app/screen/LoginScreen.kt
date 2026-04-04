@@ -2,6 +2,7 @@ package ru.hey_savvy.sigm_app.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -16,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.hey_savvy.sigm_app.repository.AuthRepository
@@ -29,6 +32,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isRegistering by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(token) {
         if (token != null) onLogin(username)
@@ -65,7 +69,13 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
             onValueChange = { password = it },
             placeholder = { Text("пароль") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Text(if (passwordVisible) "🙉" else "🙈")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))

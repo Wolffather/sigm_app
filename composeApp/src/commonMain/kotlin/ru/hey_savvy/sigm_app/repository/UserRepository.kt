@@ -30,4 +30,22 @@ class UserRepository {
             setBody(ProfileUpdate(status = status, avatarUrl = avatarUrl))
         }
     }
+
+    suspend fun updateProfile(
+        status: String? = null,
+        avatarUrl: String? = null,
+        firstName: String? = null,
+        lastName: String? = null
+    ) {
+        client.put("${Config.HTTP_URL}/users/me") {
+            header(HttpHeaders.Authorization, authHeader())
+            contentType(ContentType.Application.Json)
+            setBody(ProfileUpdate(
+                status = status,
+                avatarUrl = avatarUrl,
+                firstName = firstName,
+                lastName = lastName
+            ))
+        }
+    }
 }
