@@ -1,6 +1,7 @@
 package ru.hey_savvy.sigm_app.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
@@ -34,8 +40,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.hey_savvy.sigm_app.model.UserStatus
 import ru.hey_savvy.sigm_app.view.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,17 +54,116 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val profile by viewModel.profile.collectAsState()
-    var editingStatus by remember { mutableStateOf(false) }
     var editingFirstName by remember { mutableStateOf(false) }
     var editingLastName by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf("") }
     var firstNameText by remember { mutableStateOf("") }
     var lastNameText by remember { mutableStateOf("") }
+    var showStatusMenu by remember { mutableStateOf(false) }
+
+    var showUsernameDialog by remember { mutableStateOf(false) }
+    var newUsername by remember { mutableStateOf("") }
+    var usernamePassword by remember { mutableStateOf("") }
+    var usernameError by remember { mutableStateOf<String?>(null) }
+
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(profile) {
-        statusText = profile?.status ?: ""
         firstNameText = profile?.firstName ?: ""
         lastNameText = profile?.lastName ?: ""
+    }
+
+    if (showUsernameDialog) {
+        AlertDialog(
+            onDismissRequest = { showUsernameDialog = false },
+            title = { Text("Сменить имя пользователя") },
+            text = {
+                Column {
+                    TextField(
+                        value = newUsername,
+                        onValueChange = { newUsername = it },
+                        placeholder = { Text("Новый юзернейм") },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = usernamePassword,
+                        onValueChange = { usernamePassword = it },
+                        placeholder = { Text("Текущий пароль") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation()
+                    )
+                    usernameError?.let {
+                        Text(it, color = Color.Red, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.changeUsername(newUsername, usernamePassword) { success ->
+                        if (success) {
+                            showUsernameDialog = false
+                            newUsername = ""
+                            usernamePassword = ""
+                            usernameError = null
+                        } else {
+                            usernameError = "Неверный пароль или имя занято"
+                        }
+                    }
+                }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                Button(onClick = { showUsernameDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { showPasswordDialog = false },
+            title = { Text("Сменить пароль") },
+            text = {
+                Column {
+                    TextField(
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        placeholder = { Text("Текущий пароль") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        placeholder = { Text("Новый пароль") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation()
+                    )
+                    passwordError?.let {
+                        Text(it, color = Color.Red, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.changePassword(currentPassword, newPassword) { success ->
+                        if (success) {
+                            showPasswordDialog = false
+                            currentPassword = ""
+                            newPassword = ""
+                            passwordError = null
+                        } else {
+                            passwordError = "Неверный текущий пароль"
+                        }
+                    }
+                }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                Button(onClick = { showPasswordDialog = false }) { Text("Отмена") }
+            }
+        )
     }
 
     Scaffold(
@@ -73,7 +180,8 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -116,16 +224,63 @@ fun ProfileScreen(
                 onSave = { viewModel.updateLastName(lastNameText); editingLastName = false }
             )
 
-            ProfileField(
-                label = "Статус",
-                value = statusText,
-                isEditing = editingStatus,
-                onValueChange = { statusText = it },
-                onEdit = { editingStatus = true },
-                onSave = { viewModel.updateStatus(statusText); editingStatus = false }
-            )
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text("Статус", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showStatusMenu = true }
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(statusLabel(profile?.status ?: UserStatus.AVAILABLE))
+                        Text("▾", color = Color(0xFF7F77DD))
+                    }
+                    DropdownMenu(
+                        expanded = showStatusMenu,
+                        onDismissRequest = { showStatusMenu = false }
+                    ) {
+                        UserStatus.entries.forEach { status ->
+                            DropdownMenuItem(
+                                text = { Text(statusLabel(status)) },
+                                onClick = {
+                                    viewModel.updateStatus(status)
+                                    showStatusMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+                HorizontalDivider()
+            }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Имя пользователя")
+                TextButton(onClick = { showUsernameDialog = true }) {
+                    Text("Изменить", color = Color(0xFF7F77DD))
+                }
+            }
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Пароль")
+                TextButton(onClick = { showPasswordDialog = true }) {
+                    Text("Изменить", color = Color(0xFF7F77DD))
+                }
+            }
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = onLogout,
@@ -171,4 +326,12 @@ fun ProfileField(
         }
         HorizontalDivider()
     }
+}
+
+fun statusLabel(status: UserStatus): String = when (status) {
+    UserStatus.AVAILABLE -> "🟢 Доступен"
+    UserStatus.BUSY -> "🔴 Занят"
+    UserStatus.DO_NOT_DISTURB -> "⛔ Не беспокоить"
+    UserStatus.AWAY -> "🟡 Отошёл"
+    UserStatus.INVISIBLE -> "⚫ Невидимый"
 }

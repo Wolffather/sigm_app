@@ -72,8 +72,10 @@ fun ChatScreen(username: String, viewModel: ChatViewModel, room: Room, onBack: (
                 )
                 Button(
                     onClick = {
-                        viewModel.sendMessage(inputText,username)
-                        inputText = ""
+                        if (inputText.isNotBlank()) {
+                            viewModel.sendMessage(inputText, username)
+                            inputText = ""
+                        }
                     }
                 ) {
                     Text("→")

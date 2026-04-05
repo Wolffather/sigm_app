@@ -24,7 +24,9 @@ class ChatViewModel(
 
     private fun loadMessages() {
         viewModelScope.launch {
-            _messages.value = repository.getMessages(roomId)
+            val msgs = repository.getMessages(roomId)
+            println("LOADED MESSAGES: $msgs")
+            _messages.value = msgs
         }
     }
 

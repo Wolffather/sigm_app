@@ -37,7 +37,10 @@ class MessageRepository {
             session = this
             for (frame in incoming) {
                 if (frame is Frame.Text) {
-                    val message = Json.decodeFromString<Message>(frame.readText())
+                    val raw = frame.readText()
+                    println("RAW FRAME: $raw")
+                    val message = Json.decodeFromString<Message>(raw)
+                    println("PARSED: $message")
                     trySend(message)
                 }
             }
