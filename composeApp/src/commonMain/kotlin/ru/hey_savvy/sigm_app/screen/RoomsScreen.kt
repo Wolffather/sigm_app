@@ -2,6 +2,7 @@ package ru.hey_savvy.sigm_app.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -131,7 +133,7 @@ fun RoomsScreen(
                             Box(
                                 modifier = Modifier
                                     .size(36.dp)
-                                    .background(Color(0xFF7F77DD), shape = CircleShape),
+                                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -189,7 +191,9 @@ fun RoomsScreen(
                         room = room,
                         isMember = isMember,
                         onClick = { if (isMember) onRoomClick(room) },
-                        onJoin = { viewModel.joinRoom(room.id) }
+                        onJoin = { viewModel.joinRoom(room.id) },
+                        onLeave = { viewModel.leaveRoom(room.id) },
+                        onDelete = { viewModel.deleteRoom(room.id) }
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
@@ -206,7 +210,9 @@ fun RoomsScreen(
                         room = room,
                         isMember = true,
                         onClick = { onRoomClick(room) },
-                        onJoin = {}
+                        onJoin = {},
+                        onLeave = { viewModel.leaveRoom(room.id) },
+                        onDelete = { viewModel.deleteRoom(room.id) }
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
@@ -216,30 +222,87 @@ fun RoomsScreen(
 }
 
 @Composable
-fun RoomItem(room: Room, isMember: Boolean, onClick: () -> Unit, onJoin: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(text = room.name, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = when (room.type) {
-                    RoomType.GROUP -> "группа"
-                    RoomType.CHANNEL -> "канал"
-                    RoomType.CHAT -> "чат"
-                },
-                style = MaterialTheme.typography.labelSmall
-            )
-        }
-        if (!isMember) {
-            Button(onClick = onJoin) {
-                Text("вступить")
+fun RoomItem(room: Room, isMember: Boolean, onClick: () -> Unit, onJoin: () -> Unit, onLeave: () -> Unit, onDelete: () -> Unit) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showLeaveConfirm by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    if (showLeaveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLeaveConfirm = false },
+            title = { Text("Покинуть комнату") },
+            text = { Text("Вы уверены что хотите покинуть «${room.name}»?") },
+            confirmButton = {
+                Button(
+                    onClick = { showLeaveConfirm = false; onLeave() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Покинуть") }
+            },
+            dismissButton = {
+                Button(onClick = { showLeaveConfirm = false }) { Text("Отмена") }
             }
+        )
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Удалить комнату") },
+            text = { Text("Вы уверены что хотите удалить «${room.name}»? Это действие необратимо.") },
+            confirmButton = {
+                Button(
+                    onClick = { showDeleteConfirm = false; onDelete() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Удалить") }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteConfirm = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { if (isMember) showMenu = true }
+                )
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = room.name, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = when (room.type) {
+                        RoomType.GROUP -> "группа"
+                        RoomType.CHANNEL -> "канал"
+                        RoomType.CHAT -> "чат"
+                    },
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+            if (!isMember) {
+                Button(onClick = onJoin) {
+                    Text("вступить")
+                }
+            }
+        }
+
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Покинуть") },
+                onClick = { showMenu = false; showLeaveConfirm = true }
+            )
+            DropdownMenuItem(
+                text = { Text("Удалить", color = MaterialTheme.colorScheme.error) },
+                onClick = { showMenu = false; showDeleteConfirm = true }
+            )
         }
     }
 }

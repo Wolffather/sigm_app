@@ -34,9 +34,13 @@ import ru.hey_savvy.sigm_app.model.Room
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,13 +108,31 @@ fun MessageItem(message: Message, currentUsername: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = if (isOwn) Arrangement.End else Arrangement.Start
+        horizontalArrangement = if (isOwn) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
+        if (!isOwn) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = message.author.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
         Box(
             modifier = Modifier
                 .widthIn(max = 280.dp)
                 .background(
-                    color = if (isOwn) Color(0xFF7F77DD) else Color(0xFFE8E8E8),
+                    color = if (isOwn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(
                         topStart = 16.dp,
                         topEnd = 16.dp,
@@ -126,13 +148,13 @@ fun MessageItem(message: Message, currentUsername: String) {
                         text = message.author,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF7F77DD)
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                 }
                 Text(
                     text = message.text,
-                    color = if (isOwn) Color.White else Color.Black
+                    color = if (isOwn) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

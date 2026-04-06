@@ -25,7 +25,6 @@ class ChatViewModel(
     private fun loadMessages() {
         viewModelScope.launch {
             val msgs = repository.getMessages(roomId)
-            println("LOADED MESSAGES: $msgs")
             _messages.value = msgs
         }
     }
@@ -38,10 +37,9 @@ class ChatViewModel(
         }
     }
 
-     fun sendMessage(text: String, author: String) {
-         viewModelScope.launch {
-             repository.send(author, text)
-         }
-
+    fun sendMessage(text: String, author: String) {
+        viewModelScope.launch {
+            repository.send(author, text)
+        }
     }
 }

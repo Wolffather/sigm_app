@@ -3,6 +3,7 @@ package ru.hey_savvy.sigm_app.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -21,7 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ru.hey_savvy.sigm_app.repository.AuthRepository
+import ru.hey_savvy.sigm_app.extension.clearFocusOnTap
 import ru.hey_savvy.sigm_app.view.LoginViewModel
 
 @Composable
@@ -41,7 +42,8 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(32.dp)
+            .clearFocusOnTap(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -49,7 +51,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
             text = "sigm",
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF7F77DD)
+            color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -106,7 +108,7 @@ fun LoginScreen(viewModel: LoginViewModel, onLogin: (String) -> Unit) {
             Text(
                 text = if (isRegistering) "уже есть аккаунт? войти"
                 else "нет аккаунта? зарегистрироваться",
-                color = Color(0xFF7F77DD)
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }

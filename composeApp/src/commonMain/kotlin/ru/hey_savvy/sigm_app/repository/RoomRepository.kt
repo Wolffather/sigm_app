@@ -1,6 +1,7 @@
 package ru.hey_savvy.sigm_app.repository
 
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -47,5 +48,17 @@ class RoomRepository {
         return client.post("${Config.HTTP_URL}/chats/private/$username") {
             header(HttpHeaders.Authorization, authHeader())
         }.body()
+    }
+
+    suspend fun leaveRoom(roomId: Long) {
+        client.post("${Config.HTTP_URL}/rooms/$roomId/leave") {
+            header(HttpHeaders.Authorization, authHeader())
+        }
+    }
+
+    suspend fun deleteRoom(roomId: Long) {
+        client.delete("${Config.HTTP_URL}/rooms/$roomId") {
+            header(HttpHeaders.Authorization, authHeader())
+        }
     }
 }

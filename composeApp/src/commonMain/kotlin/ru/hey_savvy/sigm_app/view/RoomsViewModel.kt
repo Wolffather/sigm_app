@@ -53,4 +53,18 @@ class RoomsViewModel(private val repository: RoomRepository) : ViewModel() {
             onSuccess(room)
         }
     }
+
+    fun leaveRoom(roomId: Long) {
+        viewModelScope.launch {
+            repository.leaveRoom(roomId)
+            loadRooms()
+        }
+    }
+
+    fun deleteRoom(roomId: Long) {
+        viewModelScope.launch {
+            repository.deleteRoom(roomId)
+            loadRooms()
+        }
+    }
 }

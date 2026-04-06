@@ -1,11 +1,11 @@
 package ru.hey_savvy.sigm_app.repository
 
 import io.ktor.client.call.body
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.websocket.Frame
-import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.readText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -17,7 +17,7 @@ import ru.hey_savvy.sigm_app.Config
 
 class MessageRepository {
     private val client = ApiClient.client
-    private var session: WebSocketSession? = null
+    private var session: DefaultClientWebSocketSession? = null
 
     private fun authHeader() = "Bearer ${ApiClient.token}"
 
@@ -38,9 +38,7 @@ class MessageRepository {
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val raw = frame.readText()
-                    println("RAW FRAME: $raw")
                     val message = Json.decodeFromString<Message>(raw)
-                    println("PARSED: $message")
                     trySend(message)
                 }
             }

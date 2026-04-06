@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.hey_savvy.sigm_app.extension.clearFocusOnTap
 import ru.hey_savvy.sigm_app.model.UserStatus
 import ru.hey_savvy.sigm_app.view.ProfileViewModel
 
@@ -181,7 +182,8 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .clearFocusOnTap(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -189,7 +191,7 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(Color(0xFF7F77DD), shape = CircleShape),
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -236,7 +238,7 @@ fun ProfileScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(statusLabel(profile?.status ?: UserStatus.AVAILABLE))
-                        Text("▾", color = Color(0xFF7F77DD))
+                        Text("▾", color = MaterialTheme.colorScheme.primary)
                     }
                     DropdownMenu(
                         expanded = showStatusMenu,
@@ -263,7 +265,7 @@ fun ProfileScreen(
             ) {
                 Text("Имя пользователя")
                 TextButton(onClick = { showUsernameDialog = true }) {
-                    Text("Изменить", color = Color(0xFF7F77DD))
+                    Text("Изменить", color = MaterialTheme.colorScheme.primary)
                 }
             }
             HorizontalDivider()
@@ -275,7 +277,7 @@ fun ProfileScreen(
             ) {
                 Text("Пароль")
                 TextButton(onClick = { showPasswordDialog = true }) {
-                    Text("Изменить", color = Color(0xFF7F77DD))
+                    Text("Изменить", color = MaterialTheme.colorScheme.primary)
                 }
             }
             HorizontalDivider()
@@ -285,7 +287,9 @@ fun ProfileScreen(
             Button(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
             ) {
                 Text("Выйти из аккаунта", color = Color.White)
             }
@@ -321,7 +325,7 @@ fun ProfileField(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = value.ifBlank { "Не указано" })
-                TextButton(onClick = onEdit) { Text("Изменить", color = Color(0xFF7F77DD)) }
+                TextButton(onClick = onEdit) { Text("Изменить", color = MaterialTheme.colorScheme.primary) }
             }
         }
         HorizontalDivider()

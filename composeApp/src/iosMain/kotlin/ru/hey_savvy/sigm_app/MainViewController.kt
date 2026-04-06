@@ -28,52 +28,59 @@ fun MainViewController(): UIViewController {
     }
 
     return ComposeUIViewController {
-        val authRepository = remember { AuthRepository() }
-        val roomRepository = remember { RoomRepository() }
-        val messageRepository = remember { MessageRepository() }
-        val userRepository = remember { UserRepository() }
+        SigmTheme {
+            val authRepository = remember { AuthRepository() }
+            val roomRepository = remember { RoomRepository() }
+            val messageRepository = remember { MessageRepository() }
+            val userRepository = remember { UserRepository() }
 
-        var showProfile by remember { mutableStateOf(false) }
+            var showProfile by remember { mutableStateOf(false) }
 
-        val loginViewModel = remember { LoginViewModel(authRepository) }
+            val loginViewModel = remember { LoginViewModel(authRepository) }
 
-        var currentUser by remember {
-            mutableStateOf(TokenStorage.getUsername())
-        }
-        var currentRoom by remember { mutableStateOf<Room?>(null) }
+            var currentUser by remember {
+                mutableStateOf(TokenStorage.getUsername())
+            }
+            var currentRoom by remember { mutableStateOf<Room?>(null) }
 
-        if (currentUser == null) {
-            LoginScreen(
-                viewModel = loginViewModel,
-                onLogin = { username -> currentUser = username }
-            )
-        } else if (showProfile) {
-            val profileViewModel = remember { ProfileViewModel(userRepository) }
-            ProfileScreen(
-                viewModel = profileViewModel,
-                onBack = { showProfile = false },
-                onLogout = {
-                    loginViewModel.logout()
-                    currentUser = null
-                    currentRoom = null
+            if (currentUser == null) {
+                LoginScreen(
+                    viewModel = loginViewModel,
+                    onLogin = { username -> currentUser = username }
+                )
+            } else if (showProfile) {
+                val profileViewModel = remember { ProfileViewModel(userRepository) }
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onBack = { showProfile = false },
+                    onLogout = {
+                        loginViewModel.logout()
+                        currentUser = null
+                        currentRoom = null
+                    }
+                )
+            } else if (currentRoom == null) {
+                val roomsViewModel = remember { RoomsViewModel(roomRepository) }
+                RoomsScreen(
+                    viewModel = roomsViewModel,
+                    onRoomClick = { currentRoom = it },
+                    onProfileClick = { showProfile = true },
+                    currentUsername = currentUser!!
+                )
+            } else {
+                val chatViewModel = remember(currentRoom) {
+                    ChatViewModel(
+                        currentRoom!!.id.toString(),
+                        messageRepository
+                    )
                 }
-            )
-        } else if (currentRoom == null) {
-            val roomsViewModel = remember { RoomsViewModel(roomRepository) }
-            RoomsScreen(
-                viewModel = roomsViewModel,
-                onRoomClick = { currentRoom = it },
-                onProfileClick = { showProfile = true },
-                currentUsername = currentUser!!
-            )
-        } else {
-            val chatViewModel = remember(currentRoom) { ChatViewModel(currentRoom!!.id.toString(), messageRepository) }
-            ChatScreen(
-                username = currentUser!!,
-                viewModel = chatViewModel,
-                room = currentRoom!!,
-                onBack = { currentRoom = null }
-            )
+                ChatScreen(
+                    username = currentUser!!,
+                    viewModel = chatViewModel,
+                    room = currentRoom!!,
+                    onBack = { currentRoom = null }
+                )
+            }
         }
     }
 }
